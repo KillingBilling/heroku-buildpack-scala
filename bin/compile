@@ -15,13 +15,10 @@ CACHE_DIR=$2
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
-#cp -rnt ${BUILD_DIR} ${BIN_DIR}/.jdk-overlay
-#
 curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack-common.tar.gz | tar xz
 . bin/java
 
 install_java ${BUILD_DIR} "1.7"
-#jdk_overlay ${BUILD_DIR}
 export PATH="${BUILD_DIR}/.jdk/bin":$PATH
 
 java -version
@@ -30,47 +27,29 @@ java -version
 # it because otherwise the project root and $HOME
 # are the same, and by default .sbt has a (different)
 # meaning in those two places
-SBT_USER_HOME=".sbt_home"
-SBT_USER_HOME_ABSOLUTE="$BUILD_DIR/$SBT_USER_HOME"
+SBT_USER_HOME="$BUILD_DIR/.sbt_home"
 # where we put the SBT binaries
+
+mkdir -p $SBT_USER_HOME
+cd $SBT_USER_HOME
+git clone https://github.com/KillingBilling/sbt-extras.git
 SBT_BINDIR="$SBT_USER_HOME"/sbt-extras
-
-mkdir -p $SBT_USER_HOME_ABSOLUTE
-cd $SBT_USER_HOME_ABSOLUTE
-git clone git://github.com/imikushin/sbt-extras.git
-
-if [ -d $CACHE_DIR/.sbt ]; then
-	cp -r $CACHE_DIR/.sbt $SBT_USER_HOME_ABSOLUTE/.sbt
-fi
 
 # chdir as sbt expects
 cd $BUILD_DIR
 
-if ! test -e project/build.properties; then
-	echo " !      Error, your scala project must include project/build.properties and define sbt.version"
-	echo " !      You must use a release verison of sbt, sbt.version=0.11.0 or greater"
-        exit 1
-fi
-
-SBT_TASKS="clean compile stage"
-
-if [ ! -d .ivy2/cache ]; then
-   mkdir -p .ivy2/cache
-fi
+SBT_TASKS="package"
 
 # build app
 echo "-----> Running: sbt $SBT_TASKS"
 
-HOME="$SBT_USER_HOME_ABSOLUTE" $SBT_BINDIR/sbt -v -Duser.home="$SBT_USER_HOME_ABSOLUTE" -Dsbt.log.noformat=true $SBT_TASKS 2>&1 | sed -u 's/^/       /'
+HOME="$SBT_USER_HOME" $SBT_BINDIR/sbt -sbt-create -v -Duser.home="$SBT_USER_HOME" -Dsbt.log.noformat=true $SBT_TASKS 2>&1 | sed -u 's/^/       /'
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   echo " !     Failed to build app with sbt"
   exit 1
 fi
 
-if [ -d $CACHE_DIR/.sbt ]; then
-	rm -rf $CACHE_DIR/.sbt
-fi
-cp -r $SBT_USER_HOME_ABSOLUTE/.sbt $CACHE_DIR/.sbt
+cp -a target/scala-2.10/*.jar stage/lib
 
 # remove ivy and sbt cache
 rm -rf $SBT_USER_HOME/.ivy2
