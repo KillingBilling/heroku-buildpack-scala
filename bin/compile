@@ -10,32 +10,12 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 
 # parse args
 BUILD_DIR=$(cd $1; pwd)
-CACHE_DIR=$2
 
-#create the cache dir if it doesn't exist
-mkdir -p $CACHE_DIR
-
-curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack-common.tar.gz | tar xz
-. bin/java
-
-install_java ${BUILD_DIR} "1.7"
 export PATH="${BUILD_DIR}/.jdk/bin":$PATH
 
-java -version
-
-# home directory from perspective of SBT; we rename
-# it because otherwise the project root and $HOME
-# are the same, and by default .sbt has a (different)
-# meaning in those two places
 SBT_USER_HOME="$BUILD_DIR/.sbt_home"
-# where we put the SBT binaries
-
-mkdir -p $SBT_USER_HOME
-cd $SBT_USER_HOME
-git clone https://github.com/KillingBilling/sbt-extras.git
 SBT_BINDIR="$SBT_USER_HOME"/sbt-extras
 
-# chdir as sbt expects
 cd $BUILD_DIR
 
 SBT_TASKS="package"
@@ -51,6 +31,5 @@ fi
 
 cp -a target/scala-2.10/*.jar stage/lib
 
-# remove ivy and sbt cache
+# remove ivy cache
 rm -rf $SBT_USER_HOME/.ivy2
-rm -rf $SBT_USER_HOME/.sbt
