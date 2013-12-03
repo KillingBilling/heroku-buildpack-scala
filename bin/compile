@@ -11,8 +11,6 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 # parse args
 BUILD_DIR=$(cd $1; pwd)
 
-export PATH="${BUILD_DIR}/.jdk/bin":$PATH
-
 SBT_USER_HOME="$BUILD_DIR/.sbt_home"
 SBT_BINDIR="$SBT_USER_HOME"/sbt-extras
 
