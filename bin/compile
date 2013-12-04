@@ -27,9 +27,6 @@ fi
 
 cp -a target/scala-2.10/*.jar stage/lib
 
-# remove ivy cache
-rm -rf $SBT_USER_HOME/.ivy2
-
 echo "       SUCCESS building app with sbt"
 
 exit 0
