@@ -10,7 +10,6 @@ export LANG=en_US.UTF-8
 BUILD_DIR=$(cd $1; pwd)
 
 SBT_USER_HOME="$BUILD_DIR/.sbt_home"
-SBT_BINDIR="$SBT_USER_HOME"/sbt-extras
 
 cd $BUILD_DIR
 
@@ -19,7 +18,7 @@ SBT_TASKS="package"
 # build app
 echo "-----> Running: sbt $SBT_TASKS"
 
-HOME="$SBT_USER_HOME" $SBT_BINDIR/sbt -sbt-create -v -Duser.home="$SBT_USER_HOME" -Dsbt.log.noformat=true $SBT_TASKS 2>&1 | sed -u 's/^/       /'
+HOME="$SBT_USER_HOME" sbt -sbt-create -v -Duser.home="$SBT_USER_HOME" -Dsbt.log.noformat=true $SBT_TASKS 2>&1 | sed -u 's/^/       /'
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   echo " !     Failed to build app with sbt"
   exit 1
