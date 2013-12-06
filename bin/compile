@@ -24,7 +24,8 @@ if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   exit 1
 fi
 
-cp -a target/scala-2.10/*.jar stage/lib
+mkdir -p lib
+cp -a target/scala-2.10/*.jar lib
 
 echo "       SUCCESS building app with sbt"
 
